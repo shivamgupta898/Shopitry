@@ -1,0 +1,21 @@
+﻿# Dependencies & Logs
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment & Keys
+.env
+.env.local
+*.pem
+*.key
+
+# Terraform local state
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+!terraform.tfvars.example
+
+# OS Files
+.DS_Store
+Thumbs.db
