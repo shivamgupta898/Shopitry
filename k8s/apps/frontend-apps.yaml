@@ -1,0 +1,93 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storefront
+  namespace: shopitry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: storefront
+  template:
+    metadata:
+      labels:
+        app: storefront
+        tier: frontend
+    spec:
+      containers:
+        - name: storefront
+          image: shivamgupta898/shopitry-storefront:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: storefront
+  namespace: shopitry
+spec:
+  selector:
+    app: storefront
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-dashboard
+  namespace: shopitry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin-dashboard
+  template:
+    metadata:
+      labels:
+        app: admin-dashboard
+        tier: frontend
+    spec:
+      containers:
+        - name: admin-dashboard
+          image: shivamgupta898/shopitry-admin-dashboard:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-dashboard
+  namespace: shopitry
+spec:
+  selector:
+    app: admin-dashboard
+  ports:
+    - port: 80
+      targetPort: 8080
