@@ -21,23 +21,68 @@ app.get('/', (req, res) => {
   res.json(orders);
 });
 
-app.post('/', (req, res) => {
-  const { userId, items, totalAmount } = req.body;
-  if (!userId || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Valid userId and items array required' });
-  }
-
-  const order = {
-    orderId: `ORD-${Date.now()}`,
+const createOrderHandler = (req, res) => {
+  const {
     userId,
+    customerName,
+    customerPhone,
+    customerEmail,
     items,
     totalAmount,
+    total,
+    totals,
+    shippingAddress,
+    paymentMethod
+  } = req.body || {};
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'Valid items array required' });
+  }
+
+  const resolvedUserId = userId || customerEmail || customerName || 'guest-user';
+  const resolvedTotal = Number(totalAmount ?? total ?? totals?.total ?? 0);
+  const generatedId = `ORD-${Date.now()}`;
+
+  const order = {
+    id: generatedId,
+    orderId: generatedId,
+    userId: resolvedUserId,
+    customerName: customerName || 'Guest Shopper',
+    customerPhone: customerPhone || '+919876543210',
+    customerEmail: customerEmail || 'guest@shopitry.io',
+    items,
+    totalAmount: resolvedTotal,
+    total: resolvedTotal,
+    totals: totals || { total: resolvedTotal },
+    shippingAddress: shippingAddress || {},
+    paymentMethod: paymentMethod || 'Credit Card',
+    paymentStatus: 'AUTHORIZED',
+    orderStatus: 'CONFIRMED',
     status: 'CONFIRMED',
+    transactionId: `TXN-${Math.floor(100000 + Math.random() * 900000)}`,
     createdAt: new Date().toISOString(),
   };
 
-  orders.push(order);
+  orders.unshift(order);
   res.status(201).json(order);
+};
+
+app.post('/', createOrderHandler);
+app.post('/checkout', createOrderHandler);
+
+app.put('/:orderId/status', (req, res) => {
+  const { orderId } = req.params;
+  const { orderStatus, status } = req.body || {};
+  const nextStatus = orderStatus || status;
+  const order = orders.find(o => o.id === orderId || o.orderId === orderId);
+  if (!order) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+  if (nextStatus) {
+    order.orderStatus = nextStatus;
+    order.status = nextStatus;
+  }
+  res.status(200).json(order);
 });
 
 app.listen(PORT, '0.0.0.0', () => {
