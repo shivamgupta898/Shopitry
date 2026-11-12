@@ -1,0 +1,7 @@
+aws_region           = "ap-south-1"
+environment          = "prod"
+master_instance_type = "m7i-flex.large"
+worker_instance_type = "m7i-flex.large"
+worker_count         = 2
+ssh_key_name         = "your-aws-keypair-name"
+allowed_ssh_cidr     = "YOUR.PUBLIC.IP.ADDRESS/32"
