@@ -23,7 +23,8 @@ export default function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem('aether_token') || '');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
-  const [authFormData, setAuthFormData] = useState({ name: '', email: '', password: '' });
+  const [authFormData, setAuthFormData] = useState({ name: '', phone: '', email: '', password: '' });
+  const [paymentNotification, setPaymentNotification] = useState(null);
   const [authError, setAuthError] = useState('');
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -319,14 +320,20 @@ export default function App() {
       const headers = { 'content-type': 'application/json' };
       if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
+      const shopperPhone = user?.phone || '+919876543210';
+      const shopperEmail = user?.email || 'guest@shopitry.io';
+      const shopperName = user?.name || 'Guest Shopper';
+      const paidAmount = cart.totals.total;
+
       const payload = {
         items: cart.items,
-        total: cart.totals.total,
+        total: paidAmount,
         totals: cart.totals,
         shippingAddress,
         paymentMethod,
-        customerName: user ? user.name : 'Guest Shopper',
-        customerEmail: user ? user.email : 'guest@shopitry.io'
+        customerName: shopperName,
+        customerPhone: shopperPhone,
+        customerEmail: shopperEmail
       };
 
       let res = await fetch(`${API_GATEWAY}/api/orders/checkout`, {
@@ -346,11 +353,36 @@ export default function App() {
       if (res.ok) {
         const json = await res.json();
         const orderObj = json.data || json;
+        const finalOrderId = orderObj.id || Math.floor(100000 + Math.random() * 900000);
+        const finalTxnId = orderObj.transactionId || `TXN-${Date.now()}`;
+
+        // Dispatch notification to Notification Microservice (4005)
+        fetch(`${API_GATEWAY}/api/notifications`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            orderId: finalOrderId,
+            recipient: shopperPhone,
+            email: shopperEmail,
+            channel: 'SMS + EMAIL',
+            message: `Shopitry Payment Alert: ₹${paidAmount.toLocaleString('en-IN')} received for Order #${finalOrderId} (${finalTxnId}).`
+          })
+        }).catch(() => {});
+
+        setPaymentNotification({
+          phone: shopperPhone,
+          email: shopperEmail,
+          amount: paidAmount,
+          orderId: finalOrderId,
+          txnId: finalTxnId
+        });
+
         setPlacedOrder({
-          id: orderObj.id || Math.floor(100000 + Math.random() * 900000),
-          transactionId: orderObj.transactionId || `TXN-${Date.now()}`,
+          id: finalOrderId,
+          transactionId: finalTxnId,
           paymentStatus: orderObj.paymentStatus || 'AUTHORIZED',
-          customerEmail: payload.customerEmail
+          customerPhone: shopperPhone,
+          customerEmail: shopperEmail
         });
         setCart({ items: [], totals: { subtotal: 0, tax: 0, shipping: 0, total: 0, itemCount: 0 } });
         setCheckoutStep(3);
@@ -891,7 +923,7 @@ export default function App() {
                 <div className="glass-panel" style={{ padding: '16px', textAlign: 'left', borderRadius: '12px', marginBottom: '24px', fontSize: '0.85rem' }}>
                   <div><strong>Transaction ID:</strong> {placedOrder.transactionId}</div>
                   <div><strong>Payment Status:</strong> {placedOrder.paymentStatus}</div>
-                  <div><strong>Dispatched Event:</strong> Notification to {placedOrder.customerEmail}</div>
+                  <div><strong>SMS & Email Alert Sent To:</strong> {placedOrder.customerPhone} &amp; {placedOrder.customerEmail}</div>
                 </div>
 
                 <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => { setIsCheckoutOpen(false); setCheckoutStep(1); setActiveTab('orders'); }}>
@@ -919,14 +951,31 @@ export default function App() {
 
             <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {authMode === 'register' && (
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  className="input-field"
-                  required
-                  value={authFormData.name}
-                  onChange={e => setAuthFormData({...authFormData, name: e.target.value})}
-                />
+                <>
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    className="input-field"
+                    required
+                    value={authFormData.name}
+                    onChange={e => setAuthFormData({...authFormData, name: e.target.value})}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="glass-panel" style={{ padding: '12px 14px', fontSize: '0.92rem', fontWeight: 700, color: 'var(--primary-light)', borderRadius: 'var(--radius-sm)' }}>
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      placeholder="10-digit Mobile Number"
+                      maxLength={10}
+                      pattern="[0-9]{10}"
+                      className="input-field"
+                      required
+                      value={authFormData.phone}
+                      onChange={e => setAuthFormData({...authFormData, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
+                    />
+                  </div>
+                </>
               )}
               <input
                 type="email"
@@ -962,6 +1011,23 @@ export default function App() {
               <div><strong>Demo Customer:</strong> elena@example.com / customerpassword123</div>
               <div><strong>Demo Admin:</strong> admin@shopitry.com / adminpassword123</div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {paymentNotification && (
+        <div className="glass-panel" style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 1200, maxWidth: '400px', padding: '18px 20px', borderRadius: '16px', border: '1px solid rgba(16, 185, 129, 0.5)', background: 'rgba(9, 13, 22, 0.96)', boxShadow: '0 12px 32px rgba(16, 185, 129, 0.25)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+            <div>
+              <span className="badge badge-success" style={{ marginBottom: '8px' }}>SMS &amp; Email Payment Notification</span>
+              <div style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '4px' }}>
+                ₹{paymentNotification.amount.toLocaleString('en-IN')} Paid • Order #{paymentNotification.orderId}
+              </div>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                Receipt dispatched to <strong>{paymentNotification.phone}</strong> &amp; <strong>{paymentNotification.email}</strong> (Txn: {paymentNotification.txnId})
+              </p>
+            </div>
+            <button className="btn-icon" onClick={() => setPaymentNotification(null)}><X size={16} /></button>
           </div>
         </div>
       )}
