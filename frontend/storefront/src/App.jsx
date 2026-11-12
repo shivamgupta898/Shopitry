@@ -165,7 +165,7 @@ export default function App() {
   };
 
   const handleAddToCart = async (product, quantity = 1) => {
-    const itemImg = product.image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80';
+    const itemImg = getProductImage(product);
     try {
       const headers = { 'content-type': 'application/json' };
       if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
@@ -363,6 +363,15 @@ export default function App() {
     }
   };
 
+  const getProductImage = (item) => {
+    if (item?.image && item.image.startsWith('http')) return item.image;
+    const n = (item?.name || '').toLowerCase();
+    if (n.includes('keyboard')) return 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&w=800&q=80';
+    if (n.includes('chair')) return 'https://images.unsplash.com/photo-1580480055273-228ff5388ef8?auto=format&fit=crop&w=800&q=80';
+    if (n.includes('dock') || n.includes('usb')) return 'https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=800&q=80';
+    if (n.includes('monitor') || n.includes('display')) return 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80';
+    return 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80';
+  };
   const fallbackImg = 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80';
 
   return (
@@ -531,7 +540,7 @@ export default function App() {
                   <div key={prod.id} className="glass-panel glass-panel-hover" style={{ borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ height: '220px', position: 'relative', overflow: 'hidden', background: '#0b1120' }}>
                       <img
-                        src={prod.image || fallbackImg}
+                        src={getProductImage(prod)}
                         alt={prod.name}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
@@ -631,7 +640,7 @@ export default function App() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
                       {(order.items || []).map((item, idx) => (
                         <div key={idx} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                          <img src={item.image || fallbackImg} alt={item.name} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' }} />
+                          <img src={getProductImage(item)} alt={item.name} style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'cover' }} />
                           <div>
                             <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{item.name}</div>
                             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Qty: {item.quantity} × ₹{Number(item.price).toLocaleString('en-IN')}</div>
@@ -710,7 +719,7 @@ export default function App() {
               <button className="btn-icon" onClick={() => setActiveProduct(null)}><X size={20} /></button>
             </div>
 
-            <img src={activeProduct.image || fallbackImg} alt={activeProduct.name} style={{ width: '100%', height: '260px', objectFit: 'cover', borderRadius: '12px', marginBottom: '20px' }} />
+            <img src={getProductImage(activeProduct)} alt={activeProduct.name} style={{ width: '100%', height: '260px', objectFit: 'cover', borderRadius: '12px', marginBottom: '20px' }} />
 
             <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>{activeProduct.description || 'Precision engineered hardware for high-throughput developer setups.'}</p>
 
@@ -756,7 +765,7 @@ export default function App() {
               ) : (
                 cart.items.map(item => (
                   <div key={item.productId} className="glass-panel" style={{ padding: '14px', borderRadius: '12px', display: 'flex', gap: '12px' }}>
-                    <img src={item.image || fallbackImg} alt={item.name} style={{ width: '64px', height: '64px', borderRadius: '8px', objectFit: 'cover' }} />
+                    <img src={getProductImage(item)} alt={item.name} style={{ width: '64px', height: '64px', borderRadius: '8px', objectFit: 'cover' }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '0.9rem', fontWeight: 600, marginBottom: '4px' }}>{item.name}</div>
                       <div style={{ fontSize: '0.85rem', color: 'var(--primary-light)', fontWeight: 700 }}>₹{Number(item.price).toLocaleString('en-IN')}</div>
