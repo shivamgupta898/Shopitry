@@ -4,7 +4,7 @@ metadata:
   name: api-gateway
   namespace: shopitry
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: api-gateway
@@ -53,7 +53,7 @@ metadata:
   name: catalog-service
   namespace: shopitry
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: catalog-service
@@ -102,7 +102,7 @@ metadata:
   name: cart-service
   namespace: shopitry
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: cart-service
@@ -151,7 +151,7 @@ metadata:
   name: order-service
   namespace: shopitry
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: order-service
@@ -200,7 +200,7 @@ metadata:
   name: payment-service
   namespace: shopitry
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: payment-service
@@ -249,7 +249,7 @@ metadata:
   name: notification-service
   namespace: shopitry
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: notification-service
