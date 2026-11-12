@@ -1,0 +1,52 @@
+services:
+  api-gateway:
+    build: ./backend/api-gateway
+    ports:
+      - "4000:4000"
+    environment:
+      - CATALOG_SERVICE_URL=http://catalog-service:4001
+      - CART_SERVICE_URL=http://cart-service:4002
+      - ORDER_SERVICE_URL=http://order-service:4003
+      - PAYMENT_SERVICE_URL=http://payment-service:4004
+      - NOTIFICATION_SERVICE_URL=http://notification-service:4005
+    depends_on:
+      - catalog-service
+      - cart-service
+      - order-service
+      - payment-service
+      - notification-service
+
+  catalog-service:
+    build: ./backend/catalog-service
+    expose:
+      - "4001"
+
+  cart-service:
+    build: ./backend/cart-service
+    expose:
+      - "4002"
+
+  order-service:
+    build: ./backend/order-service
+    expose:
+      - "4003"
+
+  payment-service:
+    build: ./backend/payment-service
+    expose:
+      - "4004"
+
+  notification-service:
+    build: ./backend/notification-service
+    expose:
+      - "4005"
+
+  storefront:
+    build: ./frontend/storefront
+    ports:
+      - "3000:8080"
+
+  admin-dashboard:
+    build: ./frontend/admin-dashboard
+    ports:
+      - "3001:8080"
