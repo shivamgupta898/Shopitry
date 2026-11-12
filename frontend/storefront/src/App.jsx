@@ -306,7 +306,11 @@ export default function App() {
       const res = await fetch(`${API_GATEWAY}/api/orders`, { headers });
       if (res.ok) {
         const json = await res.json();
-        setUserOrders(Array.isArray(json) ? json : (json.data || []));
+        const allOrders = Array.isArray(json) ? json : (json.data || []);
+        const filtered = user
+          ? allOrders.filter(o => o.customerEmail === user.email || o.userId === user.id || o.userId === user.email)
+          : [];
+        setUserOrders(filtered);
       }
     } catch (err) {
       console.error('Orders fetch error:', err);
@@ -315,7 +319,45 @@ export default function App() {
     }
   };
 
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm(`Are you sure you want to cancel Order #${orderId}?`)) return;
+    try {
+      const res = await fetch(`${API_GATEWAY}/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'content-type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
+        },
+        body: JSON.stringify({ orderStatus: 'CANCELLED', status: 'CANCELLED' })
+      });
+      if (res.ok) {
+        setUserOrders(prev => prev.map(o => (o.id === orderId || o.orderId === orderId) ? { ...o, orderStatus: 'CANCELLED', status: 'CANCELLED' } : o));
+        if (user) {
+          fetch(`${API_GATEWAY}/api/notifications`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              orderId,
+              recipient: user.phone || '+919876543210',
+              email: user.email,
+              channel: 'SMS + EMAIL',
+              message: `Shopitry Alert: Your Order #${orderId} has been cancelled as requested.`
+            })
+          }).catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.error('Cancel order failed:', err);
+    }
+  };
+
   const handleProcessCheckout = async () => {
+    if (!user) {
+      setIsCheckoutOpen(false);
+      setAuthError('Please sign in or create an account to place an order.');
+      setIsAuthModalOpen(true);
+      return;
+    }
     try {
       const headers = { 'content-type': 'application/json' };
       if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
@@ -637,7 +679,16 @@ export default function App() {
           <div>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>My Orders & Order History</h2>
 
-            {ordersLoading ? (
+            {!user ? (
+              <div className="glass-panel" style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <Box size={48} style={{ marginBottom: '16px', color: 'var(--text-subtle)' }} />
+                <h3>Sign In Required</h3>
+                <p style={{ marginTop: '8px' }}>Please sign in with your shopper account to view or manage your orders.</p>
+                <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={() => setIsAuthModalOpen(true)}>
+                  Sign In Now
+                </button>
+              </div>
+            ) : ordersLoading ? (
               <p style={{ color: 'var(--text-muted)' }}>Loading orders from Order Microservice...</p>
             ) : userOrders.length === 0 ? (
               <div className="glass-panel" style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -659,13 +710,31 @@ export default function App() {
                           <Clock size={14} /> Placed on {new Date(order.createdAt || order.created_at || Date.now()).toLocaleDateString()}
                         </div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <span className={`badge ${(order.orderStatus || order.status) === 'DELIVERED' ? 'badge-success' : 'badge-brand'}`}>
+                      <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                        <span
+                          className={`badge ${(order.orderStatus || order.status) === 'DELIVERED' ? 'badge-success' : 'badge-brand'}`}
+                          style={(order.orderStatus || order.status) === 'CANCELLED' ? { background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.4)' } : {}}
+                        >
                           {order.orderStatus || order.status || 'CONFIRMED'}
                         </span>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 800, marginTop: '4px' }}>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>
                           ₹{Number(order.totals?.total || order.total || 0).toLocaleString('en-IN')}
                         </div>
+                        {!['CANCELLED', 'DELIVERED'].includes(order.orderStatus || order.status) && (
+                          <button
+                            className="btn"
+                            onClick={() => handleCancelOrder(order.id)}
+                            style={{
+                              padding: '5px 12px',
+                              fontSize: '0.78rem',
+                              background: 'rgba(239, 68, 68, 0.15)',
+                              color: '#f87171',
+                              border: '1px solid rgba(239, 68, 68, 0.4)'
+                            }}
+                          >
+                            Cancel Order
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -842,8 +911,21 @@ export default function App() {
                   <span style={{ color: 'var(--primary-light)' }}>₹{cart.totals.total.toLocaleString('en-IN')}</span>
                 </div>
 
-                <button className="btn btn-primary" style={{ width: '100%', padding: '14px' }} onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}>
-                  Proceed to Checkout <ArrowRight size={18} />
+                <button
+                  className="btn btn-primary"
+                  style={{ width: '100%', padding: '14px' }}
+                  onClick={() => {
+                    if (!user) {
+                      setIsCartOpen(false);
+                      setAuthError('Please sign in or create a shopper account before placing an order.');
+                      setIsAuthModalOpen(true);
+                      return;
+                    }
+                    setIsCartOpen(false);
+                    setIsCheckoutOpen(true);
+                  }}
+                >
+                  {user ? 'Proceed to Checkout' : 'Sign In to Checkout'} <ArrowRight size={18} />
                 </button>
               </div>
             )}

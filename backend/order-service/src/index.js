@@ -38,6 +38,9 @@ const createOrderHandler = (req, res) => {
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Valid items array required' });
   }
+  if (!customerEmail || customerEmail === 'guest@shopitry.io') {
+    return res.status(401).json({ error: 'Authentication required to place an order' });
+  }
 
   const resolvedUserId = userId || customerEmail || customerName || 'guest-user';
   const resolvedTotal = Number(totalAmount ?? total ?? totals?.total ?? 0);
