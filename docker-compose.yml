@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   api-gateway:
     build: ./backend/api-gateway
@@ -15,38 +17,97 @@ services:
       - order-service
       - payment-service
       - notification-service
+    networks:
+      - shopitry-net
 
   catalog-service:
     build: ./backend/catalog-service
     expose:
       - "4001"
+    networks:
+      - shopitry-net
 
   cart-service:
     build: ./backend/cart-service
     expose:
       - "4002"
+    networks:
+      - shopitry-net
 
   order-service:
     build: ./backend/order-service
     expose:
       - "4003"
+    networks:
+      - shopitry-net
 
   payment-service:
     build: ./backend/payment-service
     expose:
       - "4004"
+    networks:
+      - shopitry-net
 
   notification-service:
     build: ./backend/notification-service
     expose:
       - "4005"
+    networks:
+      - shopitry-net
 
   storefront:
     build: ./frontend/storefront
     ports:
       - "3000:8080"
+    networks:
+      - shopitry-net
 
   admin-dashboard:
     build: ./frontend/admin-dashboard
     ports:
       - "3001:8080"
+    networks:
+      - shopitry-net
+
+  # --- SonarQube & PostgreSQL Setup ---
+  sonar-db:
+    image: postgres:15-alpine
+    container_name: shopitry-sonar-db
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonarpassword
+      POSTGRES_DB: sonarqube
+    volumes:
+      - sonar_db_data:/var/lib/postgresql/data
+    networks:
+      - shopitry-net
+    restart: unless-stopped
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: shopitry-sonarqube
+    depends_on:
+      - sonar-db
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonarpassword
+      - SONAR_JDBC_URL=jdbc:postgresql://sonar-db:5432/sonarqube
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - shopitry-net
+    restart: unless-stopped
+
+volumes:
+  sonar_db_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+
+networks:
+  shopitry-net:
+    driver: bridge

@@ -1,4 +1,4 @@
-name: Shopitry CI - Build and Push Images
+name: Shopitry CI - Build, Test and Push Images
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push:
+  build-test-and-push:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -37,6 +37,33 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.context }}/package-lock.json
+
+      - name: Install Dependencies & Run Unit Tests
+        run: |
+          cd ${{ matrix.context }}
+          if [ -f "package.json" ]; then
+            npm ci
+            npm test --if-present
+          fi
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dproject.settings=${{ matrix.context }}/sonar-project.properties
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
