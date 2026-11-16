@@ -49,7 +49,7 @@ jobs:
         run: |
           cd ${{ matrix.context }}
           if [ -f "package.json" ]; then
-            npm ci
+            npm install
             npm test --if-present
           fi
 
