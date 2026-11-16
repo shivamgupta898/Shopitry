@@ -6,10 +6,23 @@ const crypto = require('crypto');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
+
+app.use((req, res, next) => {
+  if (req.headers['x-forwarded-proto'] !== 'https' && process.env.NODE_ENV === 'production') {
+    return res.redirect(https://);
+  }
+  next();
+});
 const PORT = process.env.PORT || 4000;
 
 app.use(helmet());
-app.use(cors());
+const cors = require('cors');
+const corsOptions = {
+  origin: ['http://3.108.16.17:9000', 'https://yourdomain.com'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+};
+app.use(cors(corsOptions));;
 app.use(morgan('combined'));
 
 const users = [
@@ -123,3 +136,4 @@ app.use((req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`api-gateway listening on port ${PORT}`);
 });
+

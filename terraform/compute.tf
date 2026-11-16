@@ -1,6 +1,6 @@
 data "aws_ami" "ubuntu_24_04" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  owners      = ["099720109477"]
 
   filter {
     name   = "name"
@@ -26,6 +26,12 @@ resource "aws_instance" "k8s_master" {
     volume_type           = "gp3"
     encrypted             = true
     delete_on_termination = true
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
   }
 
   tags = {
@@ -56,6 +62,12 @@ resource "aws_instance" "k8s_worker" {
     volume_type           = "gp3"
     encrypted             = true
     delete_on_termination = true
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
   }
 
   tags = {

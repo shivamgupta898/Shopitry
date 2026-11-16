@@ -395,7 +395,7 @@ export default function App() {
       if (res.ok) {
         const json = await res.json();
         const orderObj = json.data || json;
-        const finalOrderId = orderObj.id || Math.floor(100000 + Math.random() * 900000);
+        const finalOrderId = orderObj.id || Math.floor(100000 + (window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * 900000);
         const finalTxnId = orderObj.transactionId || `TXN-${Date.now()}`;
 
         // Dispatch notification to Notification Microservice (4005)
