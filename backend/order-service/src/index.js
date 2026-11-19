@@ -7,7 +7,6 @@ const app = express();
 const PORT = process.env.PORT || 4003;
 
 app.use(helmet());
-const cors = require('cors');
 const corsOptions = {
   origin: ['http://3.108.16.17:9000', 'https://yourdomain.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],

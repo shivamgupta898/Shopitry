@@ -9,14 +9,13 @@ const app = express();
 
 app.use((req, res, next) => {
   if (req.headers['x-forwarded-proto'] !== 'https' && process.env.NODE_ENV === 'production') {
-    return res.redirect(https://);
+    return res.redirect(`https://${req.headers.host}${req.url}`);
   }
   next();
 });
 const PORT = process.env.PORT || 4000;
 
 app.use(helmet());
-const cors = require('cors');
 const corsOptions = {
   origin: ['http://3.108.16.17:9000', 'https://yourdomain.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
