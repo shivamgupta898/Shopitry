@@ -8,11 +8,11 @@ const PORT = process.env.PORT || 4002;
 
 app.use(helmet());
 const corsOptions = {
-  origin: ['http://3.108.16.17:9000', 'https://yourdomain.com'],
+  origin: ['https://3.108.16.17:9000', 'https://yourdomain.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 };
-app.use(cors(corsOptions));;
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(morgan('combined'));
 
