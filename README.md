@@ -1,11 +1,11 @@
 ﻿# Shopitry — Microservices E-Commerce Platform on Kubernetes
 
 [![AWS EC2](https://img.shields.io/badge/AWS%20EC2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://aws.amazon.com/ec2/)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.31.14-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/features/actions)
 [![SonarQube](https://img.shields.io/badge/SonarQube-4E9BCD?style=for-the-badge&logo=sonarqube&logoColor=white)](https://www.sonarsource.com/products/sonarqube/)
-[![ArgoCD](https://img.shields.io/badge/ArgoCD-v3.6.1-EF7B4D?style=for-the-badge&logo=argo&logoColor=white)](https://argo-cd.readthedocs.io/)
+[![ArgoCD](https://img.shields.io/badge/ArgoCD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white)](https://argo-cd.readthedocs.io/)
 [![Datadog](https://img.shields.io/badge/Datadog-632CA6?style=for-the-badge&logo=datadog&logoColor=white)](https://www.datadoghq.com/)
 [![NGINX](https://img.shields.io/badge/NGINX%20Ingress-009639?style=for-the-badge&logo=nginx&logoColor=white)](https://kubernetes.github.io/ingress-nginx/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
@@ -197,7 +197,7 @@ shopitry/
 ## Verification & Screenshots
 
 - Infrastructure & Kubernetes Cluster (`screenshots/`)
-- S3 Remote Terraform State (`screenshots/s3-terraform-state.png`)
+- S3 Remote Terraform State (`screenshots/13-s3-terraform-state.png`)
 - CI/CD, Docker Hub & SonarQube (`screenshots/`)
 - ArgoCD GitOps (`screenshots/`)
 - Datadog Observability (`screenshots/`)
