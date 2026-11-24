@@ -25,7 +25,7 @@ I built Shopitry as a microservices e-commerce platform inside the `shopitry` Ku
                                     |
                                     v
 +-----------------------------------------------------------------------+
-| AWS EC2 (ap-south-1) — Kubernetes Cluster (v1.31.14, containerd)     |
+| AWS EC2 (ap-south-1) — Kubernetes Cluster (v1.31.14, containerd)      |
 |                                                                       |
 |  +-----------------------+  +-----------------------+  +------------+ |
 |  | shopitry-k8s-master   |  | shopitry-k8s-worker-1 |  | worker-2   | |
